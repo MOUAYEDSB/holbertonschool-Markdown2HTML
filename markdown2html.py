@@ -14,18 +14,15 @@ Usage: ./markdown2html.py <input_file> <output_file>
 
 $ ./markdown2html.py bla.md
 Missing bla.md
-
-$ ./markdown2html.py bla.md blu.html
 """
 
 import sys
 import os
 import markdown
 
-
 def convert_markdown_to_html(input_file, output_file):
     """
-    Converts a Markdown file to HTML.
+    Converts a Markdown file to HTML, including support for Headings.
 
     Args:
     input_file (str): Path to the input Markdown file.
@@ -46,18 +43,21 @@ def convert_markdown_to_html(input_file, output_file):
 
     # Read Markdown content from input file
     with open(input_file, 'r') as file:
-        markdown_content = file.read()
+        markdown_content = file.readlines()
 
-    # Convert Markdown to HTML
-    html_content = markdown.markdown(markdown_content)
-
-    # Write HTML content to output file
+    # Convert Markdown to HTML including headings
     with open(output_file, 'w') as file:
-        file.write(html_content)
-
+        for line in markdown_content:
+            if line.startswith('#'):
+                count = 0
+                while count < len(line) and line[count] == '#':
+                    count += 1
+                html_heading = f'<h{count}>{line.strip("#").strip()}</h{count}>\n'
+                file.write(html_heading)
+            else:
+                file.write(markdown.markdown(line))
 
 if __name__ == "__main__":
-    # Ensure correct usage with two arguments
     if len(sys.argv) != 3:
         print("Usage: ./markdown2html.py <input_file> <output_file>", file=sys.stderr)
         sys.exit(1)
@@ -65,7 +65,6 @@ if __name__ == "__main__":
     input_file = sys.argv[1]
     output_file = sys.argv[2]
 
-    # Check if the input Markdown file exists
     if not os.path.exists(input_file):
         print(f"Missing {input_file}", file=sys.stderr)
         sys.exit(1)
